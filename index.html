@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小窝工作台</title>
+<style>
+:root {
+  --bg: #fef9f0;
+  --card-bg: #ffffff;
+  --text: #4a3f35;
+  --text-secondary: #8b7d6b;
+  --text-tertiary: #bfb09e;
+  --border: #f0e8d8;
+  --shadow: 0 3px 14px rgba(180,160,140,0.10);
+  --shadow-hover: 0 8px 28px rgba(180,160,140,0.16);
+
+  --pink: #f2a0b0;
+  --pink-light: #fef0f4;
+  --pink-border: #fce4ec;
+  --lavender: #b0a0d8;
+  --lavender-light: #f5f0ff;
+  --lavender-border: #ece0f8;
+
+  --accent: #e88ca0;
+  --accent-hover: #d47085;
+  --danger: #e07070;
+  --danger-light: #fef2f2;
+  --success: #7ec89c;
+
+  --tag-daily-bg: #dbeafe; --tag-daily-text: #1e40af;
+  --tag-weekly-bg: #fef3c7; --tag-weekly-text: #92400e;
+  --tag-monthly-bg: #fce7f3; --tag-monthly-text: #9d174d;
+  --tag-once-bg: #f3f4f6; --tag-once-text: #4b5563;
+
+  --radius-lg: 24px;
+  --radius: 18px;
+  --radius-sm: 12px;
+  --radius-xs: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background: linear-gradient(135deg, #fef9f0 0%, #fef5f8 30%, #f5f0ff 70%, #fef9f0 100%);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Decorative background blobs ── */
+body::before {
+  content: ''; position: fixed; top: -120px; right: -80px;
+  width: 300px; height: 300px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(242,160,176,0.12) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+body::after {
+  content: ''; position: fixed; bottom: -100px; left: -60px;
+  width: 260px; height: 260px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(176,160,216,0.10) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ── Big Header ── */
+.big-header {
+  text-align: center;
+  padding: 32px 20px 10px;
+  position: relative;
+  z-index: 1;
+}
+.big-header .deco {
+  font-size: 16px;
+  letter-spacing: 6px;
+  animation: float 3s ease-in-out infinite;
+  display: inline-block;
+}
+.big-header .deco.d2 { animation-delay: 0.5s; }
+.big-header .deco.d3 { animation-delay: 1s; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.big-header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #e88ca0, #c4a0d8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 6px 0 10px;
+  letter-spacing: 1px;
+}
+.header-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid var(--pink-border);
+  padding: 5px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  box-shadow: 0 2px 8px rgba(242,160,176,0.12);
+}
+
+/* ── Two-Column Layout ── */
+.layout {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 12px 20px 24px;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 18px;
+  align-items: start;
+  position: relative;
+  z-index: 1;
+}
+.col-left { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.col-right { display: flex; flex-direction: column; gap: 14px; }
+
+/* ── Cards ── */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid var(--border);
+}
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+
+.card-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 18px; user-select: none;
+}
+.card-title { font-size: 14px; font-weight: 700; flex: 1; }
+.card-date { font-size: 12px; color: var(--text-tertiary); }
+.task-count-badge {
+  font-size: 11px; color: var(--text-secondary);
+  background: #f3f4f6; padding: 2px 10px; border-radius: 10px;
+}
+
+.card-today .card-header { background: linear-gradient(135deg, #fef0f4, #fff5f5); }
+.card-today { border-left: 4px solid var(--pink); }
+.card-calendar .card-header { background: linear-gradient(135deg, #f5f0ff, #faf8ff); }
+.card-calendar { border-left: 4px solid var(--lavender); }
+.card-docs .card-header { background: linear-gradient(135deg, #fefdfb, #fef9f0); }
+
+/* ── Collapse ── */
+.collapse-toggle { cursor: pointer; }
+.collapse-arrow { font-size: 12px; color: var(--text-tertiary); transition: transform 0.35s ease; }
+.card.open .collapse-arrow { transform: rotate(180deg); }
+.collapse-content { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.35s ease; }
+.collapse-content.open { grid-template-rows: 1fr; }
+.collapse-inner { overflow: hidden; }
+
+/* ── Task List ── */
+.task-list-inner { padding: 6px 8px; display: flex; flex-direction: column; gap: 1px; }
+.task-item {
+  display: flex; align-items: center; gap: 6px; padding: 7px 8px;
+  border-radius: var(--radius-xs); transition: background 0.15s, opacity 0.15s;
+  border: 2px solid transparent;
+}
+.task-item:hover { background: #fdfaf6; }
+.task-item.dragging { opacity: 0.4; }
+.task-item.drag-over { border-top: 2px solid var(--lavender); }
+
+.drag-handle {
+  flex-shrink: 0; width: 18px; cursor: grab; color: var(--text-tertiary);
+  font-size: 14px; letter-spacing: -2px; text-align: center; opacity: 0;
+  transition: opacity 0.15s; user-select: none; line-height: 1;
+}
+.task-item:hover .drag-handle { opacity: 1; }
+.drag-handle:active { cursor: grabbing; }
+
+.task-checkbox {
+  width: 20px; height: 20px; border-radius: 50%; border: 2px solid #d1d5db;
+  cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; font-size: 11px; color: transparent; user-select: none;
+}
+.task-checkbox:hover { border-color: var(--accent); transform: scale(1.15); }
+.task-checkbox.done {
+  background: var(--success); border-color: var(--success); color: #fff;
+  animation: popIn 0.25s ease;
+}
+@keyframes popIn {
+  0% { transform: scale(0.8); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.task-time { font-size: 12px; color: var(--accent); font-weight: 500; flex-shrink: 0; min-width: 40px; }
+.task-title-wrap { flex: 1; min-width: 0; display: flex; align-items: center; }
+.task-title { font-size: 14px; word-break: break-word; }
+.task-title.done { text-decoration: line-through; color: var(--text-tertiary); }
+.task-edit-input {
+  flex: 1; font-size: 14px; padding: 4px 8px; border: 1px solid var(--lavender);
+  border-radius: 6px; outline: none; background: #fefdfb; font-family: inherit;
+  box-shadow: 0 0 0 3px var(--lavender-light);
+}
+
+.task-tag { font-size: 10px; padding: 1px 7px; border-radius: 10px; font-weight: 500; flex-shrink: 0; }
+.tag-daily { background: var(--tag-daily-bg); color: var(--tag-daily-text); }
+.tag-weekly { background: var(--tag-weekly-bg); color: var(--tag-weekly-text); }
+.tag-monthly { background: var(--tag-monthly-bg); color: var(--tag-monthly-text); }
+.tag-once { background: var(--tag-once-bg); color: var(--tag-once-text); }
+
+.task-actions { display: flex; gap: 1px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
+.task-item:hover .task-actions { opacity: 1; }
+.task-edit-btn, .task-delete-btn {
+  background: none; border: none; cursor: pointer; font-size: 14px;
+  padding: 2px 5px; border-radius: 4px; color: var(--text-tertiary); transition: all 0.15s;
+}
+.task-edit-btn:hover { color: var(--accent); background: var(--pink-light); }
+.task-delete-btn:hover { color: var(--danger); background: var(--danger-light); }
+
+.task-empty { text-align: center; color: var(--text-tertiary); padding: 18px 0 10px; font-size: 13px; }
+
+/* ── Add Task ── */
+.add-task-area { padding: 10px 14px 14px; border-top: 1px solid var(--border); }
+.add-task-row { display: flex; gap: 8px; align-items: center; }
+.add-task-row input[type="text"] {
+  flex: 1; padding: 9px 14px; border: 1px solid var(--border); border-radius: 22px;
+  font-size: 14px; outline: none; background: #fefdfb; transition: border 0.2s, box-shadow 0.2s;
+}
+.add-task-row input[type="text"]:focus { border-color: var(--pink); box-shadow: 0 0 0 3px var(--pink-light); }
+.add-task-row input[type="text"]::placeholder { color: var(--text-tertiary); }
+.add-task-row select {
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: 22px;
+  font-size: 12px; outline: none; background: #fefdfb; cursor: pointer; color: var(--text);
+}
+.date-preview { font-size: 12px; color: var(--pink); padding: 4px 14px 0; display: none; }
+.date-preview.show { display: block; }
+
+.btn {
+  padding: 9px 18px; border-radius: 22px; border: none; cursor: pointer;
+  font-size: 13px; font-weight: 600; white-space: nowrap; transition: all 0.2s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(232,140,160,0.35); }
+.btn-sm { padding: 6px 14px; font-size: 12px; font-weight: 500; }
+.btn-xs { padding: 5px 10px; font-size: 11px; font-weight: 500; }
+
+/* ── Calendar ── */
+.cal-nav { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 8px 0 12px; }
+.cal-nav-btn {
+  background: none; border: 1px solid var(--border); border-radius: 50%;
+  width: 30px; height: 30px; cursor: pointer; font-size: 14px; color: var(--text-secondary);
+  display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+}
+.cal-nav-btn:hover { background: var(--lavender-light); border-color: var(--lavender); color: var(--lavender); }
+.cal-nav-title { font-size: 14px; font-weight: 700; min-width: 90px; text-align: center; }
+
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; padding: 0 10px; }
+.cal-dow { text-align: center; font-size: 10px; color: var(--text-tertiary); padding: 3px 0 6px; font-weight: 500; }
+.cal-dow.weekend { color: #e0b0b0; }
+
+.cal-day {
+  border-radius: 8px; padding: 3px 4px; cursor: pointer; transition: all 0.15s;
+  min-height: 52px; border: 2px solid transparent;
+}
+.cal-day:hover { background: #fdfaf6; }
+.cal-day.today { background: var(--pink-light); }
+.cal-day.selected { border-color: var(--lavender); background: #faf8ff; }
+.cal-day.other-month .cal-day-num { color: #ddd; }
+.cal-day.other-month { cursor: default; }
+.cal-day.other-month .cal-task { opacity: 0.4; }
+.cal-day-num { font-size: 11px; font-weight: 600; margin-bottom: 1px; text-align: right; }
+.cal-day.today .cal-day-num {
+  background: var(--pink); color: #fff; border-radius: 50%;
+  width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px;
+}
+.cal-day-tasks { display: flex; flex-direction: column; gap: 1px; }
+.cal-task {
+  font-size: 9px; padding: 1px 4px; border-radius: 3px; background: #f3f4f6;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
+}
+.cal-task:hover { background: #e8e7e4; }
+.cal-task.done { text-decoration: line-through; opacity: 0.5; }
+.cal-task-more { font-size: 9px; color: var(--text-tertiary); padding: 1px 4px; }
+
+.cal-add-area { padding: 8px 14px 12px; border-top: 1px solid var(--border); margin-top: 6px; }
+.cal-add-row { display: flex; gap: 6px; align-items: center; }
+.cal-add-row input[type="text"] {
+  flex: 1; padding: 7px 12px; border: 1px solid var(--border); border-radius: 22px;
+  font-size: 13px; outline: none; background: #fefdfb; transition: border 0.2s;
+}
+.cal-add-row input[type="text"]:focus { border-color: var(--lavender); box-shadow: 0 0 0 3px var(--lavender-light); }
+.cal-add-row input[type="text"]::placeholder { color: var(--text-tertiary); }
+.cal-selected-label { font-size: 11px; color: var(--text-secondary); padding: 2px 14px 0; }
+
+/* ── Brand Docs (right column) ── */
+.brand-block { padding: 14px 16px; }
+.brand-block + .brand-block { border-top: 1px solid var(--border); }
+.brand-block-header {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 700; margin-bottom: 8px;
+}
+.brand-icon {
+  width: 32px; height: 32px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; font-size: 17px;
+}
+.brand-icon.liu { background: #fdf2f8; }
+.brand-icon.yiku { background: #fffbf0; }
+
+.doc-item {
+  display: flex; align-items: center; gap: 6px; padding: 7px 10px;
+  border-radius: var(--radius-xs); transition: all 0.15s; background: #fefdfb; margin-bottom: 2px;
+}
+.doc-item:hover { background: #fdf9f3; transform: translateX(2px); }
+.doc-item a {
+  color: var(--text); text-decoration: none; font-size: 13px; flex: 1;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color 0.15s;
+}
+.doc-item a:hover { color: var(--accent); }
+.doc-open-icon { color: var(--text-tertiary); font-size: 11px; text-decoration: none; flex-shrink: 0; }
+.doc-delete {
+  background: none; border: none; color: var(--text-tertiary); cursor: pointer;
+  font-size: 14px; padding: 2px 5px; border-radius: 4px; flex-shrink: 0;
+  opacity: 0; transition: all 0.15s;
+}
+.doc-item:hover .doc-delete { opacity: 1; }
+.doc-delete:hover { color: var(--danger); background: var(--danger-light); }
+.doc-empty { text-align: center; color: var(--text-tertiary); padding: 8px 0 4px; font-size: 12px; }
+
+.add-doc-form { display: flex; gap: 4px; margin-top: 8px; align-items: center; }
+.add-doc-form input {
+  flex: 1 1 0; min-width: 0; padding: 5px 8px; border: 1px solid var(--border); border-radius: 16px;
+  font-size: 11px; outline: none; background: #fefdfb; transition: border 0.2s;
+}
+.add-doc-form input:focus { border-color: var(--accent); }
+.add-doc-form input::placeholder { color: var(--text-tertiary); }
+
+/* ── Footer ── */
+.page-footer {
+  text-align: center; padding: 6px 20px 32px;
+  font-size: 13px; color: var(--text-tertiary);
+  position: relative; z-index: 1;
+}
+
+/* ── Responsive ── */
+@media (max-width: 800px) {
+  .layout {
+    grid-template-columns: 1fr;
+    max-width: 560px;
+    padding: 10px 10px 24px;
+  }
+  .big-header { padding: 20px 14px 6px; }
+  .big-header h1 { font-size: 22px; }
+  .cal-day { min-height: 44px; }
+  .cal-day-num { font-size: 10px; }
+  .cal-task { font-size: 8px; }
+  .drag-handle { display: none; }
+  .add-task-row { flex-wrap: wrap; }
+  .add-task-row select { flex: 1; min-width: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ BIG HEADER ═══════════ -->
+<div class="big-header">
+  <span class="deco d1">🌸</span>
+  <span class="deco d2">⭐</span>
+  <span class="deco d3">🎀</span>
+  <h1>小窝工作台</h1>
+  <div class="header-pill" id="header-pill"></div>
+</div>
+
+<!-- ═══════════ TWO COLUMN LAYOUT ═══════════ -->
+<div class="layout">
+
+  <!-- ═════ LEFT COLUMN ═════ -->
+  <div class="col-left">
+
+    <!-- ✨ 今日待办 -->
+    <div class="card card-today" id="section-today">
+      <div class="card-header">
+        <span style="font-size:17px">✨</span>
+        <span class="card-title">今日待办</span>
+        <span class="card-date" id="today-date-label"></span>
+        <span class="task-count-badge" id="today-count">0</span>
+      </div>
+      <div class="task-list-inner" id="task-list-today"></div>
+      <div class="task-empty" id="task-empty-today" style="display:none"></div>
+      <div class="add-task-area">
+        <div class="add-task-row">
+          <input type="text" id="today-task-input" placeholder="如：14:00 开会  或  5.30 创意选题" maxlength="200" autocomplete="off">
+          <select id="today-task-repeat">
+            <option value="none">单次</option><option value="daily">每日</option>
+            <option value="weekly">每周</option><option value="monthly">每月</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="addTodayTask()">+ 添加</button>
+        </div>
+        <div class="date-preview" id="today-date-preview"></div>
+      </div>
+    </div>
+
+    <!-- 📅 月度规划 -->
+    <div class="card card-calendar collapsible" id="section-calendar">
+      <div class="card-header collapse-toggle" onclick="toggleSection('calendar')">
+        <span style="font-size:17px">📅</span>
+        <span class="card-title">月度规划</span>
+        <span class="task-count-badge" id="calendar-count">0</span>
+        <span class="collapse-arrow">▼</span>
+      </div>
+      <div class="collapse-content" id="collapse-calendar">
+        <div class="collapse-inner">
+          <div class="cal-nav">
+            <button class="cal-nav-btn" onclick="navMonth(-1)">◀</button>
+            <span class="cal-nav-title" id="cal-title"></span>
+            <button class="cal-nav-btn" onclick="navMonth(1)">▶</button>
+          </div>
+          <div class="cal-grid">
+            <div class="cal-dow">一</div><div class="cal-dow">二</div><div class="cal-dow">三</div><div class="cal-dow">四</div><div class="cal-dow">五</div><div class="cal-dow weekend">六</div><div class="cal-dow weekend">日</div>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+          <div class="cal-add-area">
+            <div class="cal-selected-label" id="cal-selected-label">点击日期格子来选择</div>
+            <div class="cal-add-row" style="margin-top:4px">
+              <input type="text" id="cal-task-input" placeholder="添加任务到该日期..." maxlength="200" autocomplete="off">
+              <select id="cal-task-repeat">
+                <option value="none">单次</option><option value="daily">每日</option>
+                <option value="weekly">每周</option><option value="monthly">每月</option>
+              </select>
+              <button class="btn btn-primary btn-xs" onclick="addCalTask()">+</button>
+            </div>
+            <div class="date-preview" id="cal-date-preview"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═════ RIGHT COLUMN ═════ -->
+  <div class="col-right">
+
+    <!-- 📁 品牌文档 -->
+    <div class="card card-docs" id="section-docs">
+      <div class="card-header">
+        <span style="font-size:17px">📁</span>
+        <span class="card-title">品牌文档</span>
+      </div>
+
+      <!-- 柳真真烤肉 -->
+      <div class="brand-block">
+        <div class="brand-block-header">
+          <div class="brand-icon liu">🥩</div>
+          <span style="color:#be185d;">柳真真烤肉</span>
+        </div>
+        <div id="doc-list-1"></div>
+        <div class="add-doc-form">
+          <input type="text" placeholder="文档名称" id="doc-name-1">
+          <input type="url" placeholder="https://..." id="doc-url-1">
+          <button class="btn btn-primary btn-xs" onclick="addDoc(1)">+</button>
+        </div>
+      </div>
+
+      <!-- 入口天物烘焙 -->
+      <div class="brand-block">
+        <div class="brand-block-header">
+          <div class="brand-icon yiku">🍞</div>
+          <span style="color:#b45309;">入口天物烘焙</span>
+        </div>
+        <div id="doc-list-0"></div>
+        <div class="add-doc-form">
+          <input type="text" placeholder="文档名称" id="doc-name-0">
+          <input type="url" placeholder="https://..." id="doc-url-0">
+          <button class="btn btn-primary btn-xs" onclick="addDoc(0)">+</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<div class="page-footer">🎀 今天也要加油哦 ~</div>
+
+<script>
+// ==========================================
+// UTILITIES
+// ==========================================
+var STORAGE_KEY = 'ws_data_v2';
+var WEEKDAYS = ['日','一','二','三','四','五','六'];
+
+function dateStr(d) {
+  var y = d.getFullYear();
+  var m = String(d.getMonth() + 1); if (m.length === 1) m = '0' + m;
+  var day = String(d.getDate()); if (day.length === 1) day = '0' + day;
+  return y + '-' + m + '-' + day;
+}
+function todayStr() { return dateStr(new Date()); }
+
+function getWeekKey(d) {
+  var temp = new Date(d); temp.setHours(0,0,0,0);
+  temp.setDate(temp.getDate() + 3 - (temp.getDay() + 6) % 7);
+  var week1 = new Date(temp.getFullYear(), 0, 4);
+  var weekNum = 1 + Math.round(((temp - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+  if (weekNum < 10) weekNum = '0' + weekNum;
+  return temp.getFullYear() + '-W' + weekNum;
+}
+function getMonthKey(d) {
+  var m = String(d.getMonth() + 1); if (m.length === 1) m = '0' + m;
+  return d.getFullYear() + '-' + m;
+}
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+function escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function chineseDate(ds) {
+  var d = new Date(ds + 'T00:00:00');
+  return (d.getMonth() + 1) + '月' + d.getDate() + '日 周' + WEEKDAYS[d.getDay()];
+}
+function chineseFullDate(ds) {
+  var d = new Date(ds + 'T00:00:00');
+  return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 星期' + WEEKDAYS[d.getDay()];
+}
+
+// ==========================================
+// SMART INPUT PARSING
+// ==========================================
+function parseTaskInput(text) {
+  var result = { date: todayStr(), time: null, title: text };
+  var rest = text;
+
+  var dateMatch = rest.match(/^(\d{1,2})[.\-\/](\d{1,2})(?:\s+|$)/);
+  if (dateMatch) {
+    var month = parseInt(dateMatch[1], 10), day = parseInt(dateMatch[2], 10);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      var mm = month < 10 ? '0' + month : '' + month;
+      var dd = day < 10 ? '0' + day : '' + day;
+      result.date = new Date().getFullYear() + '-' + mm + '-' + dd;
+      rest = rest.slice(dateMatch[0].length);
+    }
+  }
+
+  var timeMatch = rest.match(/^(\d{1,2}):(\d{2})(?:\s+|$)/);
+  if (timeMatch) {
+    var hour = parseInt(timeMatch[1], 10), min = parseInt(timeMatch[2], 10);
+    if (hour >= 0 && hour <= 23 && min >= 0 && min <= 59) {
+      result.time = (hour < 10 ? '0' + hour : '' + hour) + ':' + (min < 10 ? '0' + min : '' + min);
+      rest = rest.slice(timeMatch[0].length);
+    }
+  }
+
+  result.title = rest.trim() || text;
+  return result;
+}
+
+function updateDatePreview(inputEl, previewEl) {
+  if (!inputEl || !previewEl) return;
+  var text = inputEl.value.trim();
+  if (!text) { previewEl.className = 'date-preview'; return; }
+  var parsed = parseTaskInput(text);
+  var ts = todayStr(), parts = [];
+  if (parsed.date !== ts) parts.push('📅 ' + chineseDate(parsed.date));
+  if (parsed.time) parts.push('⏰ ' + parsed.time);
+  previewEl.textContent = parts.length > 0 ? parts.join('  ') : '📅 今天';
+  previewEl.className = 'date-preview show';
+}
+
+// ==========================================
+// DATA MANAGEMENT
+// ==========================================
+function loadData() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { docs: [[], []], tasks: [] };
+    var data = JSON.parse(raw);
+    if (!data.docs || data.docs.length !== 2) data.docs = [[], []];
+    if (!data.tasks) data.tasks = [];
+    for (var i = 0; i < data.tasks.length; i++) {
+      if (data.tasks[i].time === undefined) data.tasks[i].time = null;
+      if (data.tasks[i].pos === undefined) data.tasks[i].pos = i;
+    }
+    return data;
+  } catch(e) { return { docs: [[], []], tasks: [] }; }
+}
+function saveData() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); } catch(e) {} }
+var appData = loadData();
+function nextPos() {
+  var max = 0;
+  for (var i = 0; i < appData.tasks.length; i++) { if (appData.tasks[i].pos > max) max = appData.tasks[i].pos; }
+  return max + 1;
+}
+
+// ==========================================
+// TASK VISIBILITY
+// ==========================================
+function taskShowsOn(task, vd) {
+  var td = task.date; if (!td) return false;
+  switch (task.repeat) {
+    case 'daily': return td <= vd;
+    case 'weekly': if (td > vd) return false;
+      return getWeekKey(new Date(td + 'T00:00:00')) === getWeekKey(new Date(vd + 'T00:00:00'));
+    case 'monthly': if (td > vd) return false;
+      return getMonthKey(new Date(td + 'T00:00:00')) === getMonthKey(new Date(vd + 'T00:00:00'));
+    default: return td === vd;
+  }
+}
+function isCompleted(task, vd) {
+  if (task.repeat === 'none') return task.completed === true;
+  var key;
+  if (task.repeat === 'daily') key = vd;
+  else if (task.repeat === 'weekly') key = getWeekKey(new Date(vd + 'T00:00:00'));
+  else key = getMonthKey(new Date(vd + 'T00:00:00'));
+  return (task.completions || {})[key] === true;
+}
+function getCompleteKey(task, vd) {
+  if (task.repeat === 'daily') return vd;
+  if (task.repeat === 'weekly') return getWeekKey(new Date(vd + 'T00:00:00'));
+  if (task.repeat === 'monthly') return getMonthKey(new Date(vd + 'T00:00:00'));
+  return null;
+}
+
+// ==========================================
+// SORTING
+// ==========================================
+function sortTaskViews(arr) {
+  arr.sort(function(a, b) {
+    if (a._completed !== b._completed) return a._completed ? 1 : -1;
+    if (a.date !== b.date) return a.date.localeCompare(b.date);
+    if (a.time && b.time) return a.time.localeCompare(b.time);
+    if (a.time && !b.time) return -1;
+    if (!a.time && b.time) return 1;
+    if ((a.pos || 0) !== (b.pos || 0)) return (a.pos || 0) - (b.pos || 0);
+    return (a.id || '').localeCompare(b.id || '');
+  });
+}
+
+// ==========================================
+// TODAY TASKS
+// ==========================================
+var todayTaskViews = [];
+
+function collectToday() {
+  var ts = todayStr();
+  todayTaskViews = [];
+  for (var i = 0; i < appData.tasks.length; i++) {
+    var t = appData.tasks[i];
+    if (taskShowsOn(t, ts)) {
+      todayTaskViews.push({
+        id: t.id, title: t.title, date: t.date, repeat: t.repeat || 'none',
+        time: t.time || null, pos: t.pos || 0,
+        _viewDate: ts, _completed: isCompleted(t, ts)
+      });
+    }
+  }
+  sortTaskViews(todayTaskViews);
+}
+
+// ==========================================
+// RENDER: TODAY
+// ==========================================
+var tagLabels = { daily: '每日', weekly: '每周', monthly: '每月', none: '单次' };
+var editingTaskId = null;
+
+function taskItemHtml(t, contextDate) {
+  var doneClass = t._completed ? ' done' : '';
+  var checkMark = t._completed ? '✓' : '';
+  var tagCls = 'tag-' + (t.repeat || 'none');
+  var timeHtml = t.time ? '<span class="task-time">' + escHtml(t.time) + '</span>' : '';
+  var isEditing = (editingTaskId === t.id);
+  var titleHtml = isEditing
+    ? '<input type="text" class="task-edit-input" id="edit-input-' + t.id + '" value="' + escHtml(t.title) + '" data-task-id="' + t.id + '">'
+    : '<span class="task-title' + doneClass + '" id="task-title-' + t.id + '">' + escHtml(t.title) + '</span>';
+
+  return '<div class="task-item" draggable="' + (isEditing ? 'false' : 'true') + '" data-task-id="' + t.id + '"' +
+    ' ondragstart="onDragStart(event,\'' + t.id + '\')"' +
+    ' ondragend="onDragEnd(event)"' +
+    ' ondragover="onDragOver(event)"' +
+    ' ondragenter="onDragEnter(event,\'' + t.id + '\')"' +
+    ' ondragleave="onDragLeave(event)"' +
+    ' ondrop="onDrop(event,\'' + t.id + '\')">' +
+    '<span class="drag-handle" onmousedown="event.preventDefault()">⋮⋮</span>' +
+    '<div class="task-checkbox' + doneClass + '" onclick="toggleTask(\'' + t.id + '\',\'' + contextDate + '\')">' + checkMark + '</div>' +
+    timeHtml +
+    '<div class="task-title-wrap">' + titleHtml + '</div>' +
+    '<span class="task-tag ' + tagCls + '">' + tagLabels[t.repeat || 'none'] + '</span>' +
+    '<span class="task-actions">' +
+      '<button class="task-edit-btn" onclick="startEdit(\'' + t.id + '\')" title="编辑">✎</button>' +
+      '<button class="task-delete-btn" onclick="event.stopPropagation();deleteTodo(\'' + t.id + '\')" title="删除">×</button>' +
+    '</span></div>';
+}
+
+function renderToday() {
+  var list = document.getElementById('task-list-today');
+  var empty = document.getElementById('task-empty-today');
+  var count = document.getElementById('today-count');
+  if (!list || !empty || !count) return;
+
+  var inc = 0;
+  for (var i = 0; i < todayTaskViews.length; i++) { if (!todayTaskViews[i]._completed) inc++; }
+  count.textContent = todayTaskViews.length > 0 ? inc + '/' + todayTaskViews.length : '0';
+
+  if (todayTaskViews.length === 0) {
+    list.innerHTML = '';
+    empty.textContent = '今天没有待办任务，享受这一天吧 🌸';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  var ts = todayStr(), html = '';
+  for (var i = 0; i < todayTaskViews.length; i++) {
+    html += taskItemHtml(todayTaskViews[i], ts);
+  }
+  list.innerHTML = html;
+  if (editingTaskId) {
+    var inp = document.getElementById('edit-input-' + editingTaskId);
+    if (inp) { inp.focus(); inp.select(); }
+  }
+}
+
+// ==========================================
+// INLINE EDITING
+// ==========================================
+function startEdit(taskId) {
+  editingTaskId = taskId;
+  renderAll();
+  setTimeout(function() {
+    var input = document.getElementById('edit-input-' + taskId);
+    if (!input) return;
+    input.focus(); input.select();
+    function save() {
+      var newTitle = input.value.trim();
+      if (newTitle) {
+        for (var i = 0; i < appData.tasks.length; i++) {
+          if (appData.tasks[i].id === taskId) { appData.tasks[i].title = newTitle; break; }
+        }
+        saveData();
+      }
+      editingTaskId = null; renderAll();
+    }
+    function cancel() { editingTaskId = null; renderAll(); }
+    input.addEventListener('blur', function() { setTimeout(function() { if (editingTaskId === taskId) save(); }, 150); });
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.keyCode === 13) { e.preventDefault(); save(); }
+      if (e.key === 'Escape' || e.keyCode === 27) { e.preventDefault(); cancel(); }
+    });
+  }, 50);
+}
+
+// ==========================================
+// DRAG AND DROP
+// ==========================================
+var dragTaskId = null;
+
+function onDragStart(e, taskId) {
+  dragTaskId = taskId;
+  var el = e.target.closest('.task-item');
+  if (el) el.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', taskId);
+}
+function onDragEnd(e) {
+  var el = e.target.closest('.task-item');
+  if (el) el.classList.remove('dragging');
+  dragTaskId = null;
+  var items = document.querySelectorAll('.task-item.drag-over');
+  for (var i = 0; i < items.length; i++) items[i].classList.remove('drag-over');
+}
+function onDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+function onDragEnter(e, targetId) {
+  e.preventDefault();
+  if (targetId === dragTaskId) return;
+  var el = e.target.closest('.task-item');
+  if (el) el.classList.add('drag-over');
+}
+function onDragLeave(e) {
+  var el = e.target.closest('.task-item');
+  if (el) el.classList.remove('drag-over');
+}
+function onDrop(e, targetId) {
+  e.preventDefault();
+  var el = e.target.closest('.task-item');
+  if (el) el.classList.remove('drag-over');
+  if (!dragTaskId || dragTaskId === targetId) return;
+
+  var dragTask = null, targetTask = null;
+  for (var i = 0; i < appData.tasks.length; i++) {
+    if (appData.tasks[i].id === dragTaskId) dragTask = appData.tasks[i];
+    if (appData.tasks[i].id === targetId) targetTask = appData.tasks[i];
+  }
+  if (!dragTask || !targetTask) return;
+
+  var ts = todayStr();
+  if (!taskShowsOn(dragTask, ts) || !taskShowsOn(targetTask, ts)) return;
+
+  var group = [];
+  for (var i = 0; i < appData.tasks.length; i++) {
+    var t = appData.tasks[i];
+    if (taskShowsOn(t, ts)) group.push({ id: t.id, pos: t.pos || 0 });
+  }
+  group.sort(function(a, b) { return (a.pos || 0) - (b.pos || 0); });
+
+  var dragIdx = -1, targetIdx = -1;
+  for (var i = 0; i < group.length; i++) {
+    if (group[i].id === dragTaskId) dragIdx = i;
+    if (group[i].id === targetId) targetIdx = i;
+  }
+  if (dragIdx === -1 || targetIdx === -1 || dragIdx === targetIdx) return;
+
+  var newPos;
+  if (dragIdx < targetIdx) {
+    var nextPos = (targetIdx + 1 < group.length) ? group[targetIdx + 1].pos : group[targetIdx].pos + 2;
+    newPos = (group[targetIdx].pos + nextPos) / 2;
+  } else {
+    var prevPos = (targetIdx - 1 >= 0) ? group[targetIdx - 1].pos : group[targetIdx].pos - 2;
+    newPos = (prevPos + group[targetIdx].pos) / 2;
+  }
+
+  // Rebalance if precision too tight
+  var allPos = []; for (var i = 0; i < group.length; i++) allPos.push(group[i].pos);
+  allPos.push(newPos); allPos.sort(function(a, b) { return a - b; });
+  var minGap = Infinity;
+  for (var i = 1; i < allPos.length; i++) { var g = allPos[i] - allPos[i-1]; if (g > 0 && g < minGap) minGap = g; }
+  if (minGap > 0 && minGap < 0.001) {
+    for (var i = 0; i < group.length; i++) {
+      for (var j = 0; j < appData.tasks.length; j++) {
+        if (appData.tasks[j].id === group[i].id) { appData.tasks[j].pos = i; break; }
+      }
+    }
+    newPos = dragIdx < targetIdx ? targetIdx + 0.5 : targetIdx - 0.5;
+  }
+
+  dragTask.pos = newPos;
+  saveData(); renderAll(); dragTaskId = null;
+}
+
+// ==========================================
+// CALENDAR
+// ==========================================
+var calYear = new Date().getFullYear();
+var calMonth = new Date().getMonth();
+var calSelectedDate = todayStr();
+var calTaskCount = 0;
+
+function renderCalendar() {
+  var year = calYear, month = calMonth;
+  var firstDay = new Date(year, month, 1);
+  var startDow = firstDay.getDay();
+  var startOffset = startDow === 0 ? 6 : startDow - 1;
+  var daysInMonth = new Date(year, month + 1, 0).getDate();
+  var prevMonthDays = new Date(year, month, 0).getDate();
+
+  var cells = [];
+  for (var i = startOffset - 1; i >= 0; i--) {
+    cells.push({ ds: dateStr(new Date(year, month - 1, prevMonthDays - i)), other: true });
+  }
+  for (var i = 1; i <= daysInMonth; i++) {
+    cells.push({ ds: dateStr(new Date(year, month, i)), other: false });
+  }
+  var rem = 7 - (cells.length % 7);
+  if (rem < 7) {
+    for (var i = 1; i <= rem; i++) cells.push({ ds: dateStr(new Date(year, month + 1, i)), other: true });
+  }
+
+  var ts = todayStr(), sel = calSelectedDate;
+  calTaskCount = 0;
+
+  var tasksByDate = {};
+  for (var j = 0; j < appData.tasks.length; j++) {
+    var t = appData.tasks[j];
+    for (var c = 0; c < cells.length; c++) {
+      if (taskShowsOn(t, cells[c].ds)) {
+        if (!tasksByDate[cells[c].ds]) tasksByDate[cells[c].ds] = [];
+        tasksByDate[cells[c].ds].push({ id: t.id, title: t.title, _completed: isCompleted(t, cells[c].ds) });
+      }
+    }
+  }
+
+  var html = '';
+  for (var i = 0; i < cells.length; i++) {
+    var cell = cells[i], d = new Date(cell.ds + 'T00:00:00');
+    var isToday = cell.ds === ts, isSel = cell.ds === sel, isOther = cell.other;
+    var ctasks = tasksByDate[cell.ds] || [];
+    ctasks.sort(function(a, b) {
+      if (a._completed !== b._completed) return a._completed ? 1 : -1;
+      return a.title.localeCompare(b.title);
+    });
+    calTaskCount += ctasks.length;
+
+    var cls = 'cal-day';
+    if (isToday) cls += ' today';
+    if (isSel) cls += ' selected';
+    if (isOther) cls += ' other-month';
+
+    html += '<div class="' + cls + '" onclick="selectCalDay(\'' + cell.ds + '\')"><div class="cal-day-num">' + d.getDate() + '</div><div class="cal-day-tasks">';
+    var maxShow = 3;
+    for (var k = 0; k < ctasks.length && k < maxShow; k++) {
+      var ct = ctasks[k];
+      html += '<div class="cal-task' + (ct._completed ? ' done' : '') + '" onclick="event.stopPropagation();toggleTask(\'' + ct.id + '\',\'' + cell.ds + '\')">' + escHtml(ct.title) + '</div>';
+    }
+    if (ctasks.length > maxShow) html += '<div class="cal-task-more">+' + (ctasks.length - maxShow) + ' 更多</div>';
+    html += '</div></div>';
+  }
+
+  document.getElementById('cal-grid').innerHTML = html;
+  document.getElementById('cal-title').textContent = year + '年' + (month + 1) + '月';
+  document.getElementById('calendar-count').textContent = calTaskCount > 0 ? calTaskCount + '项' : '0';
+  if (calSelectedDate) document.getElementById('cal-selected-label').textContent = '📌 已选：' + chineseDate(calSelectedDate);
+}
+function selectCalDay(ds) { calSelectedDate = ds; renderCalendar(); }
+function navMonth(delta) {
+  calMonth += delta;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  calSelectedDate = dateStr(new Date(calYear, calMonth, 1));
+  renderCalendar();
+}
+function addCalTask() {
+  var inputEl = document.getElementById('cal-task-input');
+  var repeatEl = document.getElementById('cal-task-repeat');
+  if (!inputEl || !repeatEl) return;
+  var text = inputEl.value.trim(); if (!text) return;
+  var parsed = parseTaskInput(text);
+  var useDate = text.match(/^\d{1,2}[.\-\/]\d{1,2}/) ? parsed.date : calSelectedDate;
+  appData.tasks.push({
+    id: genId(), title: parsed.title, date: useDate,
+    time: parsed.time, repeat: repeatEl.value, pos: nextPos(),
+    completions: {}, completed: false
+  });
+  saveData(); inputEl.value = '';
+  document.getElementById('cal-date-preview').className = 'date-preview';
+  renderAll();
+}
+
+// ==========================================
+// ACTIONS
+// ==========================================
+function addTodayTask() {
+  var inputEl = document.getElementById('today-task-input');
+  var repeatEl = document.getElementById('today-task-repeat');
+  if (!inputEl || !repeatEl) return;
+  var text = inputEl.value.trim(); if (!text) return;
+  var parsed = parseTaskInput(text);
+  appData.tasks.push({
+    id: genId(), title: parsed.title, date: parsed.date,
+    time: parsed.time, repeat: repeatEl.value, pos: nextPos(),
+    completions: {}, completed: false
+  });
+  saveData(); inputEl.value = '';
+  document.getElementById('today-date-preview').className = 'date-preview';
+  renderAll();
+}
+
+function toggleTask(id, contextDate) {
+  var task = null;
+  for (var i = 0; i < appData.tasks.length; i++) { if (appData.tasks[i].id === id) { task = appData.tasks[i]; break; } }
+  if (!task) return;
+  if (task.repeat === 'none') { task.completed = !task.completed; }
+  else {
+    if (!task.completions) task.completions = {};
+    var key = getCompleteKey(task, contextDate);
+    if (key) task.completions[key] = !task.completions[key];
+  }
+  saveData(); renderAll();
+}
+
+function deleteTodo(id) {
+  var newTasks = [];
+  for (var i = 0; i < appData.tasks.length; i++) { if (appData.tasks[i].id !== id) newTasks.push(appData.tasks[i]); }
+  appData.tasks = newTasks;
+  saveData(); renderAll();
+}
+
+// ==========================================
+// DOCUMENTS
+// ==========================================
+function addDoc(brandIdx) {
+  var nameEl = document.getElementById('doc-name-' + brandIdx);
+  var urlEl = document.getElementById('doc-url-' + brandIdx);
+  if (!nameEl || !urlEl) return;
+  var name = nameEl.value.trim(), url = urlEl.value.trim();
+  if (!name || !url) return;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  if (!appData.docs[brandIdx]) appData.docs[brandIdx] = [];
+  appData.docs[brandIdx].push({ id: genId(), name: name, url: url });
+  saveData(); nameEl.value = ''; urlEl.value = '';
+  renderAll();
+}
+function deleteDoc(brandIdx, id) {
+  var docs = appData.docs[brandIdx] || [];
+  for (var i = docs.length - 1; i >= 0; i--) { if (docs[i].id === id) { docs.splice(i, 1); break; } }
+  saveData(); renderAll();
+}
+function renderDocs() {
+  for (var b = 0; b < 2; b++) {
+    var list = document.getElementById('doc-list-' + b);
+    var docs = appData.docs[b] || [];
+    if (!list) continue;
+    if (docs.length === 0) { list.innerHTML = '<div class="doc-empty">暂无文档</div>'; }
+    else {
+      var html = '';
+      for (var i = 0; i < docs.length; i++) {
+        var d = docs[i];
+        html += '<div class="doc-item">' +
+          '<a href="' + escHtml(d.url) + '" target="_blank" rel="noopener" title="' + escHtml(d.name) + '">📄 ' + escHtml(d.name) + '</a>' +
+          '<a href="' + escHtml(d.url) + '" target="_blank" rel="noopener" class="doc-open-icon" title="打开">🔗</a>' +
+          '<button class="doc-delete" onclick="deleteDoc(' + b + ',\'' + d.id + '\')" title="删除">&times;</button>' +
+          '</div>';
+      }
+      list.innerHTML = html;
+    }
+  }
+}
+
+// ==========================================
+// COLLAPSE & RENDER ALL
+// ==========================================
+function toggleSection(name) {
+  var content = document.getElementById('collapse-' + name);
+  var card = document.getElementById('section-' + name);
+  if (!content || !card) return;
+  var open = content.classList.contains('open');
+  if (open) { content.classList.remove('open'); card.classList.remove('open'); }
+  else { content.classList.add('open'); card.classList.add('open'); }
+}
+
+function renderAll() {
+  collectToday();
+  renderToday();
+  renderCalendar();
+  renderDocs();
+}
+
+// ==========================================
+// INIT
+// ==========================================
+document.addEventListener('DOMContentLoaded', function() {
+  var ts = todayStr();
+  document.getElementById('header-pill').textContent = chineseFullDate(ts) + '  ☀️';
+  document.getElementById('today-date-label').textContent = chineseDate(ts);
+
+  calYear = new Date().getFullYear();
+  calMonth = new Date().getMonth();
+  calSelectedDate = ts;
+
+  renderAll();
+
+  var todayInput = document.getElementById('today-task-input');
+  var todayPreview = document.getElementById('today-date-preview');
+  if (todayInput && todayPreview) {
+    todayInput.addEventListener('input', function() { updateDatePreview(todayInput, todayPreview); });
+  }
+  var calInput = document.getElementById('cal-task-input');
+  var calPreview = document.getElementById('cal-date-preview');
+  if (calInput && calPreview) {
+    calInput.addEventListener('input', function() { updateDatePreview(calInput, calPreview); });
+  }
+
+  function bindEnter(el, fn) {
+    if (!el) return;
+    el.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.keyCode === 13) { e.preventDefault(); fn(); }
+    });
+  }
+  bindEnter(todayInput, addTodayTask);
+  bindEnter(calInput, addCalTask);
+  for (var b = 0; b < 2; b++) {
+    (function(idx) {
+      bindEnter(document.getElementById('doc-name-' + idx), function() { addDoc(idx); });
+      bindEnter(document.getElementById('doc-url-' + idx), function() { addDoc(idx); });
+    })(b);
+  }
+});
+</script>
+</body>
+</html>
